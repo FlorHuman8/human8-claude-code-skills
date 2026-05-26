@@ -1,0 +1,21 @@
+{
+  "name": "human8-skills",
+  "owner": "Human8",
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "dev-skills",
+      "path": "./plugins/dev-skills"
+    },
+    {
+      "name": "pm-skills",
+      "path": "./plugins/pm-skills"
+    },
+    {
+      "name": "qa-skills",
+      "path": "./plugins/qa-skills"
+    }
+  ]
+}
