@@ -1,6 +1,6 @@
 {
   "name": "human8-skills",
-  "owner": "Human8",
+  "owner": { "name": "Human8" },
   "metadata": {
     "pluginRoot": "./plugins"
   },
