@@ -1,9 +1,0 @@
-name: human8-skills
-version: 1.0.0
-description: Human8 Claude Code skills library for Dev, PM and QA
-
-dependencies:
-  apm:
-    - FlorHuman8/human8-claude-code-skills/plugins/dev-skills
-    - FlorHuman8/human8-claude-code-skills/plugins/pm-skills
-    - FlorHuman8/human8-claude-code-skills/plugins/qa-skills
