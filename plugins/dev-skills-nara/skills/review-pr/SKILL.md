@@ -170,10 +170,10 @@ Post a separate thread for each ❌ item with enough detail for the author to ac
 
 For ⚠️ items, post a thread noting what could not be verified and what the author should double-check.
 
-**After posting all comments**, set the main PR and all active cherry-pick PRs to "Wait for author":
+**After posting all comments**, set the main PR and all active cherry-pick PRs to "Wait for author" — **do this automatically, no confirmation needed**:
 1. Call `mcp__azure-devops__repo_vote_pull_request` with `vote: "WaitingForAuthor"` on the main PR.
 2. Find cherry-pick PRs — from the work items already fetched in step 3, inspect each work item's `relations` array for entries where `rel == "ArtifactLink"` and `attributes.name == "Pull Request"`. Extract the PR ID from the artifact URL (the last path segment). Exclude the main PR's ID.
-3. For every other PR ID found, call `mcp__azure-devops__repo_get_pull_request_by_id` to check its status. If `status == 1` (Active), call `mcp__azure-devops__repo_vote_pull_request` with `vote: "WaitingForAuthor"` on it as well. Skip completed or abandoned PRs.
+3. For every other PR ID found, call `mcp__azure-devops__repo_get_pull_request_by_id` to check its status. If `status == 1` (Active), call `mcp__azure-devops__repo_vote_pull_request` with `vote: "WaitingForAuthor"` on it as well. Skip completed or abandoned PRs. Do not ask the user before voting on cherry-pick PRs — just do it.
 4. Report which PRs were set to "Wait for author" and which were skipped.
 
 ### 7. Approve PR and cherry-picks (if all items pass)
