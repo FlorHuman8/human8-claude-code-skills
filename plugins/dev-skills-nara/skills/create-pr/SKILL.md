@@ -6,7 +6,7 @@ description: Use when creating a pull request for the current branch in Azure De
 # Create PR
 
 ## Overview
-Creates an Azure DevOps PR with work item context, a pre-ticked developer checklist, auto-complete enabled, and the work item linked. If the target is a release branch, automatically creates cherry-pick branches and PRs for every newer release branch and for `develop`. Steps 0–8 are always mandatory; step 9 applies to release-branch targets only.
+Creates an Azure DevOps PR with work item context, a pre-ticked developer checklist, auto-complete enabled, and the work item linked. If the target is a release branch, automatically creates cherry-pick branches and PRs for every newer release branch and for `develop`. Steps 0–9 are always mandatory; step 10 applies to release-branch targets only.
 
 ## Steps
 
@@ -238,7 +238,7 @@ Then link the new task as a child of the parent PBI/Bug using a `System.LinkType
 
 If the target is `release/vXX`, perform the following for every release branch newer than `vXX` and then for `develop` (always last).
 
-#### 9a. Discover newer release branches
+#### 10a. Discover newer release branches
 Call `mcp__azure-devops__repo_list_branches_by_repo` with a name filter for `release/v`. Parse the version number from each branch name (`release/v09` → `9`, `release/v10` → `10`). Keep only those with a version number **greater than** the target release version. Sort ascending so the lowest version is processed first. Append `develop` to the end of the list.
 
 **`develop` is ALWAYS the last entry — even when there are no newer release branches.**
@@ -249,7 +249,7 @@ Example for target `release/v09` with branches `release/v09`, `release/v10` exis
 Example for target `release/v10` with no newer release branches:
 → cherry-pick list: `[develop]`
 
-#### 9b. Build cherry-pick branch names
+#### 10b. Build cherry-pick branch names
 Extract the short description from the current branch name by stripping the prefix and PBI number:
 - `feature/148917-generate-title-loadbalancer` → description = `generate-title-loadbalancer`
 - `cherry-pick/148917-generate-title-v09` → description = `generate-title` (strip the trailing `-v09` suffix)
@@ -263,14 +263,14 @@ Examples:
 - `cherry-pick/148917-generate-title-loadbalancer-v10`
 - `cherry-pick/148937-claude-md-develop`
 
-#### 9c. Record the original branch and commits to carry
+#### 10c. Record the original branch and commits to carry
 ```
 original_branch = git branch --show-current
 commits = git log origin/<initial-target>..HEAD --reverse --pretty=format:"%H"
 ```
 `<initial-target>` is the release branch from step 1 (e.g. `release/v09`). This gives the ordered list of commits unique to the current branch that need to travel forward.
 
-#### 9d. For each target in the cherry-pick list
+#### 10d. For each target in the cherry-pick list
 
 Run these steps in order. If one target fails, report it and continue with the next — do not abort the whole list.
 
@@ -295,7 +295,7 @@ Run these steps in order. If one target fails, report it and continue with the n
 9. Link the work item to the new PR
 10. `git checkout <original_branch>` — return to the original branch before processing the next target
 
-#### 9e. Report the outcome
+#### 10e. Report the outcome
 After all targets are processed, summarise in chat:
 
 ```
@@ -322,7 +322,7 @@ Cherry-picks completed:
 | Wrong target for cherry-pick branches | Always ask the user — do not assume `develop` |
 | PBI not verified | If user says PBI is wrong, stop and ask before proceeding |
 | Skipping gate when user says "Ignore" | Still proceed with `[X]` on all dev checklist items — "Ignore" means skip fixing, not skip the PR |
-| Running step 9 for a `develop` target | Only run step 9 when the target is a release branch — `develop` needs no cherry-picks |
+| Running step 10 for a `develop` target | Only run step 10 when the target is a release branch — `develop` needs no cherry-picks |
 | Skipping the `develop` cherry-pick when there are no newer release branches | `develop` is ALWAYS the last entry in the cherry-pick list for any release branch target — even if no newer release branches exist |
 | Cherry-picking without fetching first | Always `git fetch origin` before creating each cherry-pick branch |
 | Not returning to the original branch after each cherry-pick | Always `git checkout <original_branch>` after each target, even on failure |
