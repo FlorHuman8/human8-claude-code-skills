@@ -142,17 +142,27 @@ Use this structure, filling in content from the work item:
 
 **Critical checklist rule:** Every `- [ ]` under "CODE REVIEW CHECKLIST FOR all development" must be `- [x]`. Every item under "CODE REVIEW CHECKLIST FOR reviewers" must stay `- [ ]`. Do not tick the reviewer section.
 
-### 6. Create the PR
+### 6. Detect the repository
+Extract the repository name from the git remote:
+```bash
+git remote get-url origin
+```
+
+Parse the repository name from the URL (the last path segment, without `.git`).
+
+Call `mcp__azure-devops__repo_get_repo_by_name_or_id` with that name to retrieve the repository GUID. Store both the name and GUID — they are required for creating the PR and linking work items in steps 7 and 8.
+
+### 7. Create the PR
 Call `mcp__azure-devops__repo_create_pull_request` with:
-- `repositoryId`: `Nolvin`
+- `repositoryId`: repository name detected in step 6
 - `title`: `Merge <source-branch> into <target-branch>` — use the full branch names (e.g. `Merge feature/148917-generate-title into develop`)
 - `description`: Full description from step 5
 - `sourceRefName`: current branch (prefix with `refs/heads/`)
 - `targetRefName`: branch from step 1 (prefix with `refs/heads/`)
 
-**After the call, verify the PR was created:** The API sometimes returns no data even when creation succeeded. Immediately call `mcp__azure-devops__repo_list_pull_requests_by_commits` using the HEAD commit hash to retrieve the PR ID. If that tool is unavailable, call `mcp__azure-devops__repo_get_pull_request_by_id` incrementing from the last known PR ID until the PR is found. Do not proceed to step 7 without a confirmed PR ID.
+**After the call, verify the PR was created:** The API sometimes returns no data even when creation succeeded. Immediately call `mcp__azure-devops__repo_list_pull_requests_by_commits` using the HEAD commit hash to retrieve the PR ID. If that tool is unavailable, call `mcp__azure-devops__repo_get_pull_request_by_id` incrementing from the last known PR ID until the PR is found. Do not proceed to step 8 without a confirmed PR ID.
 
-### 7. Enable auto-complete
+### 8. Enable auto-complete
 Immediately after confirming the PR ID, call `mcp__azure-devops__repo_update_pull_request` with:
 - `autoComplete: true`
 - `deleteSourceBranch: true`
@@ -161,7 +171,7 @@ Immediately after confirming the PR ID, call `mcp__azure-devops__repo_update_pul
 
 **This step is mandatory.** Do not report the PR as created without completing this step. If the merge strategy is rejected by policy, retry without specifying `mergeStrategy`.
 
-### 8. Resolve work items to link and update
+### 9. Resolve work items to link and update
 
 The work item type from step 4 determines what gets linked and what state transitions to make.
 
@@ -183,26 +193,26 @@ The work item type from step 4 determines what gets linked and what state transi
 #### Linking work items to the PR
 Call `mcp__azure-devops__wit_link_work_item_to_pull_request` for each work item being linked.
 
-**Critical:** The `repositoryId` parameter must be the repository **GUID**, not the name. Passing the name (e.g. `"Nolvin"`) silently returns `success: true` but creates no link. Look up the GUID via `mcp__azure-devops__repo_get_repo_by_name_or_id` if not already known. For the Nolvin repository the GUID is `b01d1d54-cb1c-409d-a988-ac3a3a9367e3` — cache this for the rest of the session.
+**Critical:** The `repositoryId` parameter must be the repository **GUID** retrieved in step 6, not the name. Passing the name silently returns `success: true` but creates no link.
 
 #### Updating work item states
 Call `mcp__azure-devops__wit_update_work_item` for each state transition above.
 
 If a state update fails with an unsupported state error, skip it silently and note it in the final summary.
 
-### 9. Update or create the Manual Testing task
+### 10. Update or create the Manual Testing task
 
 Identify the **parent PBI/Bug** to use as the anchor:
-- If the linked work item is a Task and has a real parent (from step 8): use that parent.
+- If the linked work item is a Task and has a real parent (from step 9): use that parent.
 - If the linked work item is a Bug/PBI directly: use it as the anchor.
 - If the linked work item is a Task with a placeholder parent: **skip this step entirely**.
 
-#### 9a. Find an existing Manual Testing task
+#### 10a. Find an existing Manual Testing task
 Fetch the children of the parent PBI/Bug: look in the `relations` array for entries with `rel == "System.LinkTypes.Hierarchy-Forward"` and fetch each child with `mcp__azure-devops__wit_get_work_item`.
 
 Search for a child Task whose title contains "Manual Testing" (case-insensitive).
 
-#### 9b. Generate the test plan
+#### 10b. Generate the test plan
 Based on the diff and work item context, generate a concise test plan:
 
 ```
@@ -224,24 +234,24 @@ Based on the diff and work item context, generate a concise test plan:
 
 Keep it practical — steps a tester can follow without reading the code.
 
-#### 9c. If the Manual Testing task exists
+#### 10c. If the Manual Testing task exists
 Call `mcp__azure-devops__wit_get_work_item` to read its current description. Append the generated test plan to the existing description (do not overwrite). Call `mcp__azure-devops__wit_update_work_item` to save the updated description.
 
-#### 9d. If no Manual Testing task exists
+#### 10d. If no Manual Testing task exists
 Call `mcp__azure-devops__wit_create_work_item` to create a new Task with:
 - `title`: `Manual Testing`
-- `description`: the generated test plan from 9b
+- `description`: the generated test plan from 10b
 - `workItemType`: `Task`
 
 Then link the new task as a child of the parent PBI/Bug using a `System.LinkTypes.Hierarchy-Reverse` relation.
 
-### 10. Auto cherry-pick to newer branches (release targets only)
+### 11. Auto cherry-pick to newer branches (release targets only)
 
 **Skip this step entirely if the target branch from step 1 is `develop`.**
 
 If the target is `release/vXX`, perform the following for every release branch newer than `vXX` and then for `develop` (always last).
 
-#### 10a. Discover newer release branches
+#### 11a. Discover newer release branches
 Call `mcp__azure-devops__repo_list_branches_by_repo` with a name filter for `release/v`. Parse the version number from each branch name (`release/v09` → `9`, `release/v10` → `10`). Keep only those with a version number **greater than** the target release version. Sort ascending so the lowest version is processed first. Append `develop` to the end of the list.
 
 **`develop` is ALWAYS the last entry — even when there are no newer release branches.**
@@ -252,7 +262,7 @@ Example for target `release/v09` with branches `release/v09`, `release/v10` exis
 Example for target `release/v10` with no newer release branches:
 → cherry-pick list: `[develop]`
 
-#### 10b. Build cherry-pick branch names
+#### 11b. Build cherry-pick branch names
 Extract the short description from the current branch name by stripping the prefix and PBI number:
 - `feature/148917-generate-title-loadbalancer` → description = `generate-title-loadbalancer`
 - `cherry-pick/148917-generate-title-v09` → description = `generate-title` (strip the trailing `-v09` suffix)
@@ -266,20 +276,20 @@ Examples:
 - `cherry-pick/148917-generate-title-loadbalancer-v10`
 - `cherry-pick/148937-claude-md-develop`
 
-#### 10c. Record the original branch and commits to carry
+#### 11c. Record the original branch and commits to carry
 ```
 original_branch = git branch --show-current
 commits = git log origin/<initial-target>..HEAD --reverse --pretty=format:"%H"
 ```
 `<initial-target>` is the release branch from step 1 (e.g. `release/v09`). This gives the ordered list of commits unique to the current branch that need to travel forward.
 
-#### 10d. For each target in the cherry-pick list
+#### 11d. For each target in the cherry-pick list
 
 Run these steps in order. If one target fails, report it and continue with the next — do not abort the whole list.
 
 1. `git fetch origin` — ensure the target branch is up to date locally
 2. `git checkout -b <cherry-pick-branch> origin/<target>` — create the cherry-pick branch from the remote target
-3. `git cherry-pick <commit1> <commit2> ...` — apply all commits from 9c in order
+3. `git cherry-pick <commit1> <commit2> ...` — apply all commits from 11c in order
 4. **If a conflict occurs:**
    - Run `git diff` to show the conflict markers
    - Show the conflict to the user and ask how to resolve it:
@@ -289,16 +299,16 @@ Run these steps in order. If one target fails, report it and continue with the n
    - After resolving, continue with step 5 (push)
 5. `git push origin <cherry-pick-branch>`
 6. Create a PR via `mcp__azure-devops__repo_create_pull_request`:
-   - Title: `Merge <cherry-pick-branch> into <target>` (same format as step 6)
+   - Title: `Merge <cherry-pick-branch> into <target>` (same format as step 7)
    - Same description structure as step 5, but add a note at the top of the Summary: `> Cherry-pick of !<original-PR-ID> to <target>` — use `!` not `#`, as `#` links to work items in Azure DevOps
    - `sourceBranch`: `refs/heads/<cherry-pick-branch>`
    - `targetBranch`: `refs/heads/<target>`
-7. Verify the PR was created (same verification as step 6)
+7. Verify the PR was created (same verification as step 7)
 8. Enable auto-complete — call `mcp__azure-devops__repo_update_pull_request` with `autoComplete: true`, `deleteSourceBranch: true`, `transitionWorkItems: false`, and `mergeStrategy: NoFastForward` for release branch targets or `Squash` for `develop`. If the merge strategy is rejected by policy, retry without specifying `mergeStrategy`.
-9. Link the work item to the new PR — call `mcp__azure-devops__wit_link_work_item_to_pull_request` using the repository **GUID** (`b01d1d54-cb1c-409d-a988-ac3a3a9367e3`), not the name. Same requirement as step 8.
+9. Link the work item to the new PR — call `mcp__azure-devops__wit_link_work_item_to_pull_request` using the repository **GUID** from step 6, not the name.
 10. `git checkout <original_branch>` — return to the original branch before processing the next target
 
-#### 10e. Report the outcome
+#### 11e. Report the outcome
 After all targets are processed, summarise in chat:
 
 ```
@@ -310,7 +320,7 @@ Cherry-picks completed:
 - release/v11: resolve manually with: git checkout -b cherry-pick/... origin/release/v11 && git cherry-pick ...
 ```
 
-### 11. Final summary
+### 12. Final summary
 Once all steps are complete, report the full outcome in chat:
 
 ```
@@ -338,14 +348,15 @@ Omit sections that don't apply (e.g. no cherry-picks for `develop` targets, no p
 | Determining target branch too late | Step 1 must resolve the target — pre-flight diff and all subsequent steps depend on it |
 | Running pre-flight diff against `develop` when target is a release branch | Always use `git diff <target>...HEAD` with the target from step 1, never hardcode `develop` |
 | Skipping the pre-flight gate | Always run step 2 — never assume the code is clean |
+| Skipping repository detection | Always run step 6 — the Communities team has multiple repos and the name must be derived from the git remote |
 | Skipping auto-complete | Always call update PR immediately after create — never skip |
 | Developer checklist items unticked | All items in dev section use `[X]` — copy the exact wording above |
 | Reviewer section ticked | Reviewer items always stay `- [ ]` |
 | Not linking the work item | Always call link after PR is created |
-| Wrong target for cherry-pick branches | Always ask the user — do not assume `develop` |
+| Wrong target for cherry-pick branches | Parse the suffix from the branch name first — only ask the user if no suffix is found |
 | PBI not verified | If user says PBI is wrong, stop and ask before proceeding |
 | Skipping gate when user says "Ignore" | Still proceed with `[X]` on all dev checklist items — "Ignore" means skip fixing, not skip the PR |
-| Running step 10 for a `develop` target | Only run step 10 when the target is a release branch — `develop` needs no cherry-picks |
+| Running step 11 for a `develop` target | Only run step 11 when the target is a release branch — `develop` needs no cherry-picks |
 | Skipping the `develop` cherry-pick when there are no newer release branches | `develop` is ALWAYS the last entry in the cherry-pick list for any release branch target — even if no newer release branches exist |
 | Cherry-picking without fetching first | Always `git fetch origin` before creating each cherry-pick branch |
 | Not returning to the original branch after each cherry-pick | Always `git checkout <original_branch>` after each target, even on failure |
@@ -361,7 +372,7 @@ Omit sections that don't apply (e.g. no cherry-picks for `develop` targets, no p
 | Creating a Manual Testing task under a placeholder parent | Only create/update the task when the parent is a real PBI/Bug |
 | Assuming the PR was created because the API returned no error | Always verify the PR ID after creation before proceeding to auto-complete and linking |
 | Using branch prefix to determine target for non-standard branches | Non-standard prefixes (sidework, hotfix, etc.) require git log comparison to detect the base branch |
-| Using repo name instead of GUID in `wit_link_work_item_to_pull_request` | The API silently returns `success: true` with a name but creates no link — always use the GUID (`b01d1d54-cb1c-409d-a988-ac3a3a9367e3` for Nolvin) |
+| Passing the repo name instead of GUID to `wit_link_work_item_to_pull_request` | The API silently returns `success: true` with a name but creates no link — always use the GUID from step 6 |
 | Not setting `deleteSourceBranch: true` on auto-complete | Branches won't be deleted on merge — always include `deleteSourceBranch: true` when enabling auto-complete |
 | Aborting cherry-pick conflicts without showing them to the user | Always show `git diff` output first and offer resolution options — the user may be able to resolve in seconds |
 | Assuming standard prefix means expected target branch | A `bugfix/*` branch may have been created from a release branch — verify commit count before assuming the target |
