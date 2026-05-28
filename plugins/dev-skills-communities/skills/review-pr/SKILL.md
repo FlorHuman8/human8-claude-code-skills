@@ -42,11 +42,10 @@ Determine whether the PR touches **backend** files (`.cs`), **frontend** files (
 | No sensitive information | Passwords, secrets, API keys, connection strings anywhere in the diff? |
 | Methods max 40 effective lines, do 1 thing | Any new/modified method body over 40 non-blank non-comment lines? Multiple responsibilities? |
 | No hardcoded values (constants named consistently) | String/number literals in logic code that should be named constants? New constants follow the existing naming style in the file? |
-| Unused code removed | Commented-out blocks, unreachable code, unused variables or imports? |
 | Exceptions not swallowed | Empty `catch` blocks, bare `catch` without logging, or catches that swallow without rethrowing? |
 | Least possible visibility | `public` on things that could be `internal`, `private`, or `protected`? |
 | Interfaces over static/abstract | `new ConcreteClass()` injected as dependencies instead of an interface? |
-| 40% unit test coverage | Were tests added or updated alongside the production code changes? |
+| 70% unit test coverage | Were tests added or updated alongside the production code changes? |
 
 #### Developer checklist — Frontend (`.vue`, `.ts`, `.scss` files)
 | Item | What to check in the diff |
@@ -60,8 +59,7 @@ Determine whether the PR touches **backend** files (`.cs`), **frontend** files (
 | `http-service` helpers used | API calls use the exported `get`/`post`/`put`/`del`/`upload` helpers, never raw `axios`? |
 | Loading state pattern | Loading states use `ref<boolean>` with `try/finally` to ensure reset on error? |
 | No hardcoded values | Magic strings/numbers extracted to constants or config? |
-| Unused code removed | Unused imports, variables, or dead template blocks? |
-| 40% unit test coverage | Were tests added or updated alongside component/store changes? |
+| 70% unit test coverage | Were tests added or updated alongside component/store changes? |
 
 #### Reviewer checklist (applies to all PRs)
 | Item | What to check |
