@@ -36,7 +36,7 @@ For standard prefixes:
 |---|---|
 | `feature/*` | `develop` |
 | `bugfix/*` | `develop` |
-| `cherry-pick/*` | Parse the target from the branch name suffix — `cherry-pick/148917-generate-title-v09` → `release/v09`, `cherry-pick/148937-generate-title-develop` → `develop`. If no recognizable suffix is present, ask the user. |
+| `cherry-pick/*` | Parse the target from the branch name suffix — `cherry-pick/148917-generate-title-v071` → `release/v071`, `cherry-pick/148937-generate-title-develop` → `develop`. If no recognizable suffix is present, ask the user. |
 
 For **non-standard prefixes** (e.g. `sidework/*`, `hotfix/*`, or any other prefix not listed above), detect the base branch automatically by comparing unique commits:
 
@@ -252,28 +252,28 @@ Then link the new task as a child of the parent PBI/Bug using a `System.LinkType
 If the target is `release/vXX`, perform the following for every release branch newer than `vXX` and then for `develop` (always last).
 
 #### 11a. Discover newer release branches
-Call `mcp__azure-devops__repo_list_branches_by_repo` with a name filter for `release/v`. Parse the version number from each branch name (`release/v09` → `9`, `release/v10` → `10`). Keep only those with a version number **greater than** the target release version. Sort ascending so the lowest version is processed first. Append `develop` to the end of the list.
+Call `mcp__azure-devops__repo_list_branches_by_repo` with a name filter for `release/v`. Parse the version number from each branch name (`release/v071` → `71`, `release/v072` → `72`). Keep only those with a version number **greater than** the target release version. Sort ascending so the lowest version is processed first. Append `develop` to the end of the list.
 
 **`develop` is ALWAYS the last entry — even when there are no newer release branches.**
 
-Example for target `release/v09` with branches `release/v09`, `release/v10` existing:
-→ cherry-pick list: `[release/v10, develop]`
+Example for target `release/v071` with branches `release/v071`, `release/v072` existing:
+→ cherry-pick list: `[release/v072, develop]`
 
-Example for target `release/v10` with no newer release branches:
+Example for target `release/v072` with no newer release branches:
 → cherry-pick list: `[develop]`
 
 #### 11b. Build cherry-pick branch names
 Extract the short description from the current branch name by stripping the prefix and PBI number:
 - `feature/148917-generate-title-loadbalancer` → description = `generate-title-loadbalancer`
-- `cherry-pick/148917-generate-title-v09` → description = `generate-title` (strip the trailing `-v09` suffix)
+- `cherry-pick/148917-generate-title-v071` → description = `generate-title` (strip the trailing `-v071` suffix)
 - `sidework/148937-claude-md` → description = `claude-md`
 
 Cherry-pick branch name format: `cherry-pick/<PBI>-<description>-<target-suffix>`
-- target suffix for `release/v10` → `v10`
+- target suffix for `release/v072` → `v072`
 - target suffix for `develop` → `develop`
 
 Examples:
-- `cherry-pick/148917-generate-title-loadbalancer-v10`
+- `cherry-pick/148917-generate-title-loadbalancer-v072`
 - `cherry-pick/148937-claude-md-develop`
 
 #### 11c. Record the original branch and commits to carry
@@ -281,7 +281,7 @@ Examples:
 original_branch = git branch --show-current
 commits = git log origin/<initial-target>..HEAD --reverse --pretty=format:"%H"
 ```
-`<initial-target>` is the release branch from step 1 (e.g. `release/v09`). This gives the ordered list of commits unique to the current branch that need to travel forward.
+`<initial-target>` is the release branch from step 1 (e.g. `release/v071`). This gives the ordered list of commits unique to the current branch that need to travel forward.
 
 #### 11d. For each target in the cherry-pick list
 
@@ -313,11 +313,11 @@ After all targets are processed, summarise in chat:
 
 ```
 Cherry-picks completed:
-✅ release/v10  → PR #[ID]: [title]
-✅ develop      → PR #[ID]: [title]
+✅ release/v072  → PR #[ID]: [title]
+✅ develop       → PR #[ID]: [title]
 
 ⚠️ Skipped (conflicts):
-- release/v11: resolve manually with: git checkout -b cherry-pick/... origin/release/v11 && git cherry-pick ...
+- release/v073: resolve manually with: git checkout -b cherry-pick/... origin/release/v073 && git cherry-pick ...
 ```
 
 ### 12. Final summary
