@@ -36,14 +36,14 @@ For standard prefixes:
 |---|---|
 | `feature/*` | `develop` |
 | `bugfix/*` | `develop` |
-| `cherry-pick/*` | **Ask the user** — typically `release/vXX` |
+| `cherry-pick/*` | Parse the target from the branch name suffix — `cherry-pick/148917-generate-title-v09` → `release/v09`, `cherry-pick/148937-generate-title-develop` → `develop`. If no recognizable suffix is present, ask the user. |
 
 For **non-standard prefixes** (e.g. `sidework/*`, `hotfix/*`, or any other prefix not listed above), detect the base branch automatically by comparing unique commits:
 
 ```bash
 git fetch origin
 git log --oneline origin/develop..HEAD
-git log --oneline origin/release/v09..HEAD   # repeat for each known release branch
+git log --oneline origin/release/vXX..HEAD   # repeat for each known release branch
 ```
 
 The target is the branch with the **fewest unique commits** — that is the branch this was created from. If the counts are ambiguous, ask the user to confirm.
@@ -53,14 +53,17 @@ The target is the branch with the **fewest unique commits** — that is the bran
 Store the resolved target branch — all subsequent steps use it.
 
 ### 2. Pre-flight checklist gate
-Run `git diff <target>...HEAD` (using the target from step 1) to inspect the changes, then verify each developer checklist item:
+Run `git diff <target>...HEAD` (using the target from step 1) to inspect the changes.
+
+**Hard stop — sensitive information:** Before anything else, scan the diff for passwords, secrets, connection strings, or API keys in config or code files. If any are found, **stop immediately** and tell the user. Do not proceed until the sensitive information is removed.
+
+Then verify each remaining developer checklist item:
 
 | Checklist item | How to verify |
 |---|---|
 | Clear PR description | You will write this — ensure it describes the change meaningfully |
 | New references explained | Scan diff for new `.csproj` references, NuGet packages, or npm imports — if any, confirm they're explained in the summary |
 | Comments on new endpoints / difficult code | Scan diff for new controller actions, service methods, or complex logic — check for XML doc / inline comments |
-| No sensitive information | Scan diff for passwords, secrets, connection strings, API keys in config or code files |
 | Methods do 1 thing, max 40 effective lines | Scan diff for new/modified methods — flag any over 40 non-blank, non-comment lines |
 | No hardcoded values (constants are SNAKE_CASE) | Scan diff for string/number literals outside of test files or constant declarations |
 | Unused code removed | Scan diff for commented-out blocks or variables that are declared but never used |
@@ -291,8 +294,8 @@ Run these steps in order. If one target fails, report it and continue with the n
    - `sourceBranch`: `refs/heads/<cherry-pick-branch>`
    - `targetBranch`: `refs/heads/<target>`
 7. Verify the PR was created (same verification as step 6)
-8. Enable auto-complete on the new PR
-9. Link the work item to the new PR
+8. Enable auto-complete — call `mcp__azure-devops__repo_update_pull_request` with `autoComplete: true`, `deleteSourceBranch: true`, `transitionWorkItems: false`, and `mergeStrategy: NoFastForward` for release branch targets or `Squash` for `develop`. If the merge strategy is rejected by policy, retry without specifying `mergeStrategy`.
+9. Link the work item to the new PR — call `mcp__azure-devops__wit_link_work_item_to_pull_request` using the repository **GUID** (`b01d1d54-cb1c-409d-a988-ac3a3a9367e3`), not the name. Same requirement as step 8.
 10. `git checkout <original_branch>` — return to the original branch before processing the next target
 
 #### 10e. Report the outcome
@@ -306,6 +309,26 @@ Cherry-picks completed:
 ⚠️ Skipped (conflicts):
 - release/v11: resolve manually with: git checkout -b cherry-pick/... origin/release/v11 && git cherry-pick ...
 ```
+
+### 11. Final summary
+Once all steps are complete, report the full outcome in chat:
+
+```
+✅ PR created: Merge <source> into <target> — PR #[ID]
+
+Work items updated:
+- #[ID] [title] → [state]
+- #[ID] [parent title] → For Review  ← only if a real parent was linked
+
+Manual Testing task: [updated on / created on] #[parent ID]  ← only if applicable
+
+Cherry-picks:
+✅ release/vXX → PR #[ID]: [title]
+✅ develop     → PR #[ID]: [title]
+⚠️ Skipped (conflicts): [branch] — resolve manually with: git checkout -b ...
+```
+
+Omit sections that don't apply (e.g. no cherry-picks for `develop` targets, no parent if it was a placeholder).
 
 ## Common Mistakes
 

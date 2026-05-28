@@ -27,6 +27,8 @@ If no work items are linked, note this as ⚠️ Uncertain for the PBI completen
 
 ### 4. Check every checklist item
 
+The PR description contains a pre-ticked developer checklist. **Treat every ticked item as a claim to verify against the diff — not as a fact to trust.** A ticked box that is not supported by the diff is a ❌ Fail.
+
 Evaluate all items below. For each one, record: ✅ Pass, ❌ Fail, or ⚠️ Uncertain. For every failure, note the file path and the **modified file** line number (from `modifiedLineNumberStart` in the diff) so the comment can be anchored precisely in step 6.
 
 Determine whether the PR touches **backend** files (`.cs`), **frontend** files (`.vue`, `.ts`, `.scss`), or both, and apply the relevant sections below.
