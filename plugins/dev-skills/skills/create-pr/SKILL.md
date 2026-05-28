@@ -11,14 +11,17 @@ Creates a PR with an accurate summary of the changes, auto-complete enabled, wor
 ## Steps
 
 ### 0. Push branch to remote if needed
-Check whether the current branch has a remote tracking branch:
+Run both checks:
 ```bash
 git rev-parse --abbrev-ref --symbolic-full-name @{u}
+git rev-list --count @{u}..HEAD 2>/dev/null || echo "no-upstream"
 ```
 
-If it returns a tracking branch, the branch is already remote — skip to step 1.
+- If the first command errors or returns empty → no tracking branch exists. Push now.
+- If the second command returns a number greater than 0 → the tracking branch exists but there are unpushed commits. Push now.
+- Only if the second command returns `0` is the branch fully in sync — skip to step 1.
 
-If it returns an error or empty output, push now:
+Push when needed:
 ```bash
 git push -u origin HEAD
 ```
@@ -200,7 +203,7 @@ Then call `mcp__azure-devops__wit_add_child_work_items` (or add a `System.LinkTy
 
 | Mistake | Fix |
 |---|---|
-| Not pushing the branch before creating the PR | Always run step 0 first — the remote must have the branch |
+| Not pushing the branch before creating the PR | Always run step 0 first — a tracking branch existing is not enough; check that `git rev-list --count @{u}..HEAD` returns 0 |
 | Determining target branch too late | Step 1 must resolve the target — diff and all subsequent steps depend on it |
 | Running pre-flight diff against the wrong branch | Always use `git diff <target>...HEAD` with the target from step 1 |
 | Skipping the sensitive info check | Always scan the diff before creating the PR |

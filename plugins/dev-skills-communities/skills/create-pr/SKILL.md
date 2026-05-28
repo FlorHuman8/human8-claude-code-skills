@@ -11,16 +11,19 @@ Creates an Azure DevOps PR with work item context, a pre-ticked developer checkl
 ## Steps
 
 ### 0. Push branch to remote if needed
-Before doing anything else, ensure the current branch exists in the remote.
+Before doing anything else, ensure the current branch is fully pushed to the remote.
 
-Check whether the current branch has a remote tracking branch:
+Run both checks:
 ```bash
 git rev-parse --abbrev-ref --symbolic-full-name @{u}
+git rev-list --count @{u}..HEAD 2>/dev/null || echo "no-upstream"
 ```
 
-If the command returns a tracking branch (e.g. `origin/feature/12345-my-branch`), the branch is already in the remote — skip to step 1.
+- If the first command errors or returns empty → no tracking branch exists. Push now.
+- If the second command returns a number greater than 0 → the tracking branch exists but there are unpushed commits. Push now.
+- Only if the second command returns `0` is the branch fully in sync — skip to step 1.
 
-If the command returns an error or empty output, the branch is not yet pushed. Push it now:
+Push when needed:
 ```bash
 git push -u origin HEAD
 ```
@@ -344,7 +347,7 @@ Omit sections that don't apply (e.g. no cherry-picks for `develop` targets, no p
 
 | Mistake | Fix |
 |---|---|
-| Not pushing the branch before creating the PR | Always run step 0 first — the remote must have the branch before a PR can be created |
+| Not pushing the branch before creating the PR | Always run step 0 first — a tracking branch existing is not enough; check that `git rev-list --count @{u}..HEAD` returns 0 before proceeding |
 | Determining target branch too late | Step 1 must resolve the target — pre-flight diff and all subsequent steps depend on it |
 | Running pre-flight diff against `develop` when target is a release branch | Always use `git diff <target>...HEAD` with the target from step 1, never hardcode `develop` |
 | Skipping the pre-flight gate | Always run step 2 — never assume the code is clean |
