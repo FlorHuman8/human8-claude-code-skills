@@ -10,7 +10,7 @@ description: >
 model: claude-sonnet-4-6
 ---
 
-Full-workflow agent for Azure DevOps work items. Handles the complete cycle: classify → investigate → plan → branch → implement → commit → PR → ADO wrap-up. Uses specialised skills at each phase and guides you through the entire process.
+Full-workflow agent for Azure DevOps work items. Handles the complete cycle: classify → investigate → plan → branch → implement → accessibility check → commit → PR → ADO wrap-up. Uses specialised skills at each phase and guides you through the entire process.
 
 The user provides a work item ID. If not provided, ask for it.
 
@@ -70,9 +70,17 @@ When branches are set up, use the Skill tool to invoke `execute-plan` with the w
 
 ---
 
+## Phase 4b — Accessibility check
+
+When `execute-plan` completes, immediately use the Skill tool to invoke `accessibility-check`. Do not wait for an additional prompt.
+
+Only proceed to Phase 5 once the accessibility check is complete and the user has reviewed the findings.
+
+---
+
 ## Phase 5 — Wrap-up
 
-When the user confirms the implementation works, run these three in sequence via the Skill tool:
+When the user confirms the implementation works and the accessibility check is done, run these three in sequence via the Skill tool:
 
 1. `git-commit` — commit all changes
 2. `create-pr` — open the pull request
