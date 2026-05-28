@@ -66,11 +66,10 @@ Then verify each remaining developer checklist item:
 | Comments on new endpoints / difficult code | Scan diff for new controller actions, service methods, or complex logic — check for XML doc / inline comments |
 | Methods do 1 thing, max 40 effective lines | Scan diff for new/modified methods — flag any over 40 non-blank, non-comment lines |
 | No hardcoded values (constants are SNAKE_CASE) | Scan diff for string/number literals outside of test files or constant declarations |
-| Unused code removed | Scan diff for commented-out blocks or variables that are declared but never used |
 | Exceptions not swallowed | Scan diff for empty `catch` blocks or catches that only log without rethrowing |
 | Least possible visibility | Scan diff for `public` on methods/classes that could be `internal`, `private`, or `protected` |
 | Interfaces used over static/abstract | Scan diff for `new ConcreteClass()` injected as dependencies instead of interfaces |
-| 40% unit test coverage on new code | Check if test files were added or modified alongside the changed production code |
+| 70% unit test coverage on new code | Check if test files were added or modified alongside the changed production code |
 
 After checking, present any **potential violations** to the user:
 
@@ -126,11 +125,10 @@ Use this structure, filling in content from the work item:
 - [X] I didn't include sensitive information (e.g., passwords) in the config or any other file
 - [X] My methods only do 1 thing (SOLID) and only have max 40 effective lines of code
 - [X] I did not hard code anything. If I did need constants they are isolated and named as SNAKE_CASE
-- [X] I removed unused code
 - [X] My code doesn't swallow exceptions. I throw strongly typed exceptions.
 - [X] My classes and methods have the least possible visibility (private, protected, internal etc.)
 - [X] My code is unit-testable: I used interfaces rather than static or abstract classes.
-- [X] My newly written code is covered with at least 40% unit tests
+- [X] My newly written code is covered with at least 70% unit tests
 
 ##### CODE REVIEW CHECKLIST FOR reviewers
 - [ ] All rules from the code review checklist for developers are checked and reviewed
@@ -138,6 +136,8 @@ Use this structure, filling in content from the work item:
 - [ ] Security concerns have been addressed
 - [ ] The functionality fits the current design/architecture/technical plan
 - [ ] The code does all that is described in the PBI/Bug
+
+PLEASE ONLY APPROVE THE PR WHEN ALL BOXES ARE TICKED.
 ```
 
 **Critical checklist rule:** Every `- [ ]` under "CODE REVIEW CHECKLIST FOR all development" must be `- [x]`. Every item under "CODE REVIEW CHECKLIST FOR reviewers" must stay `- [ ]`. Do not tick the reviewer section.
