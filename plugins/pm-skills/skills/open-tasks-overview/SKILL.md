@@ -149,20 +149,26 @@ Do NOT write a summary for features that have no active PBIs (only testing-pipel
 
 ## Step 7 - Write HTML file
 
-Output path: `C:\Users\Alieke\Downloads\br-<BR>-open-tasks.html` where `<BR>` is the BR number with dots replaced by dashes (e.g. `32-01`).
+Write the file to **two locations**:
+1. `C:\Users\Alieke\Downloads\br-<BR>-open-tasks.html` — the permanent download copy
+2. `C:\Users\Alieke\Claude code\br-<BR>-open-tasks.html` — served by the preview server
 
-Use the Write tool to write the file directly to that path. Never output markdown - always write a complete standalone HTML file.
+Where `<BR>` is the BR number with dots replaced by dashes (e.g. `32-01`).
+
+Use the Write tool to write to the Downloads path first. Then use PowerShell `Copy-Item` to copy it to the working directory.
+
+Never output markdown - always write a complete standalone HTML file.
 
 ### Full CSS (copy verbatim)
 
 ```css
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; background: #f5f6f8; color: #1a1a2e; padding: 24px; }
-h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; background: #f5f6f8; color: #1a1a2e; padding: 24px; max-width: 860px; }
+h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
 .feature-section { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; overflow: hidden; }
 .feature-header { padding: 14px 18px; background: #f0f2f7; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e0e3ec; }
-.badge { background: #4a6cf7; color: #fff; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+.badge { background: #4a6cf7; color: #fff; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
 .badge.done { background: #22c55e; }
 .badge.pipeline { background: #f59e0b; }
 .feature-summary { padding: 12px 18px 10px; border-bottom: 1px solid #eef0f6; font-size: 13px; color: #444; line-height: 1.6; background: #fafbff; }
@@ -172,14 +178,14 @@ details { border-bottom: 1px solid #f0f2f7; }
 details:last-child { border-bottom: none; }
 summary { padding: 10px 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; list-style: none; user-select: none; }
 summary::-webkit-details-marker { display: none; }
-summary::before { content: '▶'; font-size: 10px; color: #999; transition: transform 0.15s; flex-shrink: 0; }
+summary::before { content: '▶'; font-size: 9px; color: #999; transition: transform 0.15s; flex-shrink: 0; }
 details[open] > summary::before { transform: rotate(90deg); }
 summary:hover { background: #f8f9fc; border-radius: 6px; }
 .pbi-id { color: #4a6cf7; font-weight: 600; text-decoration: none; font-size: 13px; }
 .pbi-id:hover { text-decoration: underline; }
 .pbi-title { font-weight: 600; color: #1a1a2e; }
 .pbi-meta { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-.state-pill { border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.state-pill { border-radius: 20px; padding: 3px 11px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .state-pill.for-testing    { background: #ede9fe; color: #7c3aed; }
 .state-pill.for-review     { background: #dbeafe; color: #1d4ed8; }
 .state-pill.in-development { background: #dcfce7; color: #15803d; }
@@ -187,10 +193,10 @@ summary:hover { background: #f8f9fc; border-radius: 6px; }
 .state-pill.for-feedback   { background: #fef9c3; color: #a16207; }
 .state-pill.additional     { background: #fce7f3; color: #be185d; }
 .task-count { font-size: 12px; color: #888; white-space: nowrap; }
-.task-table-wrap { padding: 4px 16px 12px 32px; }
+.task-table-wrap { padding: 4px 16px 12px 32px; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { text-align: left; color: #888; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 8px; border-bottom: 1px solid #e8eaf0; }
-td { padding: 7px 8px; border-bottom: 1px solid #f4f5f9; vertical-align: top; }
+th { text-align: left; color: #888; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 8px; border-bottom: 1px solid #e8eaf0; }
+td { padding: 8px 8px; border-bottom: 1px solid #f4f5f9; vertical-align: top; }
 tr:last-child td { border-bottom: none; }
 td a { color: #4a6cf7; text-decoration: none; font-weight: 600; }
 td a:hover { text-decoration: underline; }
@@ -306,6 +312,21 @@ td.unassigned { color: #ccc; font-size: 12px; }
 
 ---
 
+## Step 8 - Show in preview (ALWAYS required)
+
+**This step is mandatory. Always open the preview after writing the file — never skip it.**
+
+The preview server serves `C:\Users\Alieke\Claude code\` on port 3456 (server name `release-status`).
+
+1. Use `preview_start` with name `release-status` to ensure the server is running (it will reuse it if already up).
+2. Use `preview_list` to get the running server ID.
+3. Use `preview_eval` to navigate: `window.location.href = '/br-<BR>-open-tasks.html'`
+4. Use `preview_screenshot` to capture and show the result to Lauren.
+
+If `preview_screenshot` times out or fails, use `preview_snapshot` to confirm the page rendered correctly and tell Lauren the preview is open.
+
+---
+
 ## Tone and style
 
 - Summaries focus on **what still needs to happen** - steps, blockers, dependencies, parallel work
@@ -313,3 +334,4 @@ td.unassigned { color: #ccc; font-size: 12px; }
 - Only mention a person's name when their absence is the blocker ("unassigned - needs an owner")
 - Routine tasks always go at the bottom of each task table, greyed out
 - Never ask clarifying questions - just run the queries and render
+- **Always complete Step 8** — the preview is not optional
