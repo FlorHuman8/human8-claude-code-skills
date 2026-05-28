@@ -5,7 +5,9 @@
       "args": [
         "-y",
         "@azure-devops/mcp",
-        "insites"
+        "insites",
+        "--project",
+        "InSites Eco"
       ]
     }
   }
