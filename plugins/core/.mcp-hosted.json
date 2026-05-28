@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ado": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@azure-devops/mcp",
+        "insites"
+      ]
+    }
+  }
+}

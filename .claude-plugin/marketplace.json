@@ -2,6 +2,7 @@
   "name": "human8-skills",
   "owner": { "name": "Human8" },
   "plugins": [
+    { "name": "core", "source": "./plugins/core", "description": "Human8 core infrastructure — includes the Azure DevOps MCP server required by all skills" },
     { "name": "dev-skills", "source": "./plugins/dev-skills", "description": "Dev workflow skills" },
     { "name": "pm-skills", "source": "./plugins/pm-skills", "description": "PM workflow skills" },
     { "name": "qa-skills", "source": "./plugins/qa-skills", "description": "QA workflow skills" },

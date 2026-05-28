@@ -1,0 +1,5 @@
+{
+  "name": "core",
+  "description": "Human8 core infrastructure — includes the Azure DevOps MCP server required by all skills",
+  "version": "1.0.0"
+}
