@@ -1,5 +1,5 @@
 ---
-name: azure-devops-create-rework
+name: create-rework
 description: Creates Rework tasks in Azure DevOps from Manual testing work items via user-azure-devops MCP. Eligible source tasks are To Do or In Progress and changed within the last ~6 months. Rework titles use a repro-based suffix after the "Rework - " prefix with mandatory user confirmation. Sets task type to Rework, parents under the sprint story/PBI, on the team's current sprint, adds repro steps and optional video URL to the description, and posts a comment @-mentioning the parent PBI assignee and assignees from earlier rework tasks on that PBI. Use when the user asks to create or log a rework, files a defect from manual testing, or provides an ADO URL or work item ID while testing.
 ---
 

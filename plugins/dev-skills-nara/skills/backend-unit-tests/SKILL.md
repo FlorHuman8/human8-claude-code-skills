@@ -1,5 +1,5 @@
 ---
-name: nolvin-unit-tests
+name: backend-unit-tests
 description: |
   Write backend unit tests for the Nolvin C# codebase. Use this skill whenever the user asks to write, add, generate, or scaffold unit tests for any controller, service, handler, or validator in the Nolvin solution (repo at source/repos/Nolvin). Trigger on phrases like "write tests for", "add unit tests", "test this class", "generate tests", "cover this with tests", "create a test file", or any request to improve test coverage on a Nolvin class. Also trigger when pasting Nolvin C# code and asking "can you test this?" or similar.
 ---

@@ -1,5 +1,5 @@
 ---
-name: review
+name: review-pr
 description: Use when reviewing a pull request in Azure DevOps. Triggers on "review PR", "review this PR", "/review", or any request to review a pull request or give code review feedback.
 ---
 

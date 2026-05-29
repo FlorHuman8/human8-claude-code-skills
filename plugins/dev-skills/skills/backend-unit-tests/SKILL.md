@@ -1,5 +1,5 @@
 ---
-name: cs-unit-tests
+name: backend-unit-tests
 description: |
   Write C# backend unit tests based on the current git branch changes. Use this skill whenever the user asks to write, generate, add, or scaffold unit tests for a C# backend project — especially when working on a feature branch. Trigger on: "write tests for this branch", "add unit tests", "generate tests for my changes", "cover my changes with tests", "write tests for X class", "can you test this?", or any request to improve test coverage in a C# repo. Works on any C# project by learning its test conventions at runtime. Always use this skill instead of guessing C# test patterns.
 ---

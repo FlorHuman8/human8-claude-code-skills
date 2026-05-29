@@ -1,5 +1,5 @@
 ---
-name: ado-test-plan
+name: write-test-plan
 description: |
   Create a test plan in Azure DevOps (InSites Eco project) from a work item. Use this skill whenever the user asks to "write a test plan for PBI X", "create a test plan for work item X", "generate test cases for X", or any variation. Trigger on phrases like "test plan for", "create tests for PBI", "write test plan", "generate test cases for work item", or when given a work item ID and asked about testing. Also trigger when the user says things like "can you test plan this?" or pastes a PBI number in context of QA/testing.
 ---

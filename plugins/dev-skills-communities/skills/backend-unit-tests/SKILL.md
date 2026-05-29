@@ -1,5 +1,5 @@
 ---
-name: insites-unit-tests
+name: backend-unit-tests
 description: |
   Write backend unit tests for the InSites Eco C# codebase. Use this skill whenever the user asks to write, add, generate, or scaffold unit tests for any class, service, validator, handler, or controller in the InSites Eco solution. Trigger on phrases like "write tests for", "add unit tests", "test this class", "generate tests", "cover this with tests", "create a test file", or any request to improve test coverage on an InSites Eco class. Also trigger when pasting C# code and asking "can you test this?" or similar.
 ---

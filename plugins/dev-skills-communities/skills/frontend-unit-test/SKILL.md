@@ -1,5 +1,5 @@
 ---
-name: vue-unit-test
+name: frontend-unit-test
 description: |
   Write front-end unit tests for the InSites Eco Vue 3 codebase (MemberPortal and SquareUi).
   Use this skill whenever the user asks to write, add, generate, or create unit tests for Vue

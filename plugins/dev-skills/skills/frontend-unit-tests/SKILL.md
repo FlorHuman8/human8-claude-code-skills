@@ -1,5 +1,5 @@
 ---
-name: generic-frontend-unit-tests
+name: frontend-unit-tests
 description: |
   Write Vue 3 frontend unit tests based on the current git branch changes. Use this skill
   whenever the user asks to write, generate, add, or scaffold unit tests for a Vue frontend
