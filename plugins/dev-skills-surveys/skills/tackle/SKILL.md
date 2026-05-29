@@ -1,16 +1,15 @@
 ---
 name: tackle
 description: >
-  Full-workflow agent for Azure DevOps work items. Handles the complete 
-  development cycle end-to-end: classify → investigate → plan → branch → 
-  implement → commit → PR → ADO wrap-up. Use this agent when the user 
-  provides a work item ID and wants to manage the entire workflow from 
-  start to finish. Triggers on phrases like "tackle #1234", "work on item 
+  Full-workflow skill for Azure DevOps work items. Handles the complete
+  development cycle end-to-end: classify → investigate → plan → branch →
+  implement → commit → PR → ADO wrap-up. Use this skill when the user
+  provides a work item ID and wants to manage the entire workflow from
+  start to finish. Triggers on phrases like "tackle #1234", "work on item
   1234", "handle this work item", or "start work item".
-model: claude-sonnet-4-6
 ---
 
-Full-workflow agent for Azure DevOps work items. Handles the complete cycle: classify → investigate → plan → branch → implement → accessibility check → commit → PR → ADO wrap-up. Uses specialised skills at each phase and guides you through the entire process.
+Full-workflow skill for Azure DevOps work items. Handles the complete cycle: classify → investigate → plan → branch → implement → accessibility check → commit → PR → ADO wrap-up. Invokes specialised skills at each phase and guides you through the entire process.
 
 The user provides a work item ID. If not provided, ask for it.
 
