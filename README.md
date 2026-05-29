@@ -16,9 +16,9 @@ Install this first. Without it, skills that connect to Azure DevOps won't work.
 
 | Plugin | Skills |
 |---|---|
-| `dev-skills` | `create-pr`, `review-pr`, `accessibility-check`, `cs-unit-tests`, `generic-frontend-unit-tests` |
-| `pm-skills` | `write-pbi`, `add-acceptance-criteria`, `check-pbi-readiness`, `open-tasks-overview`, `write-user-guide` |
-| `qa-skills` | `ado-test-plan`, `azure-devops-create-rework` |
+| `dev-skills` | `create-pr`, `review-pr`, `accessibility-check`, `backend-unit-tests`, `frontend-unit-tests` |
+| `pm-skills` | `write-pbi`, `add-acceptance-criteria`, `check-pbi-readiness`, `open-tasks-overview`, `write-user-guide`, `release-status` |
+| `qa-skills` | `write-test-plan`, `create-rework` |
 
 ### Team-specific plugins
 
@@ -27,8 +27,8 @@ Each team plugin bundles a complete end-to-end dev workflow and a `tackle` agent
 | Plugin | Team | Agent | Team-specific extras |
 |---|---|---|---|
 | `dev-skills-surveys` | Surveys | `tackle` | `ado-wrap`, `create-bug-from-ticket` |
-| `dev-skills-communities` | Communities | `tackle` | `vue-unit-test`, `insites-unit-tests`, `create-bug-from-ticket` |
-| `dev-skills-nara` | Nara / Nolvin | `tackle` | `nolvin-unit-tests`, `create-bug-from-ticket` |
+| `dev-skills-communities` | Communities | `tackle` | `backend-unit-tests`, `frontend-unit-test`, `create-bug-from-ticket`, `square-prod-logs` |
+| `dev-skills-nara` | Nara / Nolvin | `tackle` | `backend-unit-tests`, `create-bug-from-ticket` |
 
 All three team plugins share this workflow skill set:
 
@@ -177,8 +177,8 @@ Use skills individually when you want to step through the workflow manually or r
 **Base dev skills:**
 ```
 /dev-skills:accessibility-check
-/dev-skills:cs-unit-tests
-/dev-skills:generic-frontend-unit-tests
+/dev-skills:backend-unit-tests
+/dev-skills:frontend-unit-tests
 /dev-skills:create-pr
 /dev-skills:review-pr
 ```
@@ -190,12 +190,13 @@ Use skills individually when you want to step through the workflow manually or r
 /pm-skills:check-pbi-readiness
 /pm-skills:open-tasks-overview
 /pm-skills:write-user-guide
+/pm-skills:release-status
 ```
 
 **QA skills:**
 ```
-/qa-skills:ado-test-plan
-/qa-skills:azure-devops-create-rework
+/qa-skills:write-test-plan
+/qa-skills:create-rework
 ```
 
 Skills are also available in the general Claude chat — you don't need the CLI. Describe what you want in natural language and Claude will invoke the right skill.
@@ -215,28 +216,40 @@ human8-claude-code-skills/
     │       ├── create-pr/SKILL.md
     │       ├── review-pr/SKILL.md
     │       ├── accessibility-check/SKILL.md
-    │       ├── cs-unit-tests/SKILL.md
-    │       └── generic-frontend-unit-tests/SKILL.md
+    │       ├── backend-unit-tests/SKILL.md
+    │       └── frontend-unit-tests/SKILL.md
     ├── pm-skills/                          # Product management skills
     │   └── skills/
     │       ├── write-pbi/SKILL.md
     │       ├── add-acceptance-criteria/SKILL.md
     │       ├── check-pbi-readiness/SKILL.md
     │       ├── open-tasks-overview/SKILL.md
-    │       └── write-user-guide/SKILL.md
+    │       ├── write-user-guide/SKILL.md
+    │       └── release-status/SKILL.md
     ├── qa-skills/                          # QA skills
     │   └── skills/
-    │       ├── ado-test-plan/SKILL.md
-    │       └── azure-devops-create-rework/SKILL.md
+    │       ├── write-test-plan/SKILL.md
+    │       └── create-rework/SKILL.md
     ├── dev-skills-surveys/                 # Surveys team full workflow
     │   ├── agents/tackle.md
-    │   └── skills/ ...
+    │   └── skills/
+    │       ├── ... (shared workflow skills)
+    │       ├── ado-wrap/SKILL.md
+    │       └── create-bug-from-ticket/SKILL.md
     ├── dev-skills-communities/             # Communities team full workflow
     │   ├── agents/tackle.md
-    │   └── skills/ ...
+    │   └── skills/
+    │       ├── ... (shared workflow skills)
+    │       ├── backend-unit-tests/SKILL.md
+    │       ├── frontend-unit-test/SKILL.md
+    │       ├── create-bug-from-ticket/SKILL.md
+    │       └── square-prod-logs/SKILL.md
     └── dev-skills-nara/                    # Nara / Nolvin team full workflow
         ├── agents/tackle.md
-        └── skills/ ...
+        └── skills/
+            ├── ... (shared workflow skills)
+            ├── backend-unit-tests/SKILL.md
+            └── create-bug-from-ticket/SKILL.md
 ```
 
 ## Contributing
