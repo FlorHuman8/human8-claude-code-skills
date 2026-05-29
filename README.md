@@ -130,3 +130,101 @@ Team plugins shadow the base skill with the same name. To add or update a team o
 ## About
 
 Built at the Human8 hackathon. Skills are atomic — one skill, one task — and designed to chain into larger workflows. Team-specific plugins let each team add their own conventions without forking the shared base. The library grows over time as teams discover new use cases.
+
+## Installation
+
+### Prerequisites
+
+Git must be installed — Claude Code and the plugin marketplace require it. Verify with:
+
+```
+git --version
+```
+
+---
+
+### Option A — Claude Code Desktop App
+
+**Step 1 — Open the Code section**
+
+In the Claude desktop app, click the **Code** tab in the left sidebar.
+
+![Open the Code section](docs/images/01-code-tab.png)
+
+**Step 2 — Open Customize**
+
+Click **Customize** to open the configuration panel.
+
+![Open Customize](docs/images/02-customize.png)
+
+**Step 3 — Open the plugins menu**
+
+Under **Personal plugins**, click the **+** button to open the plugins menu.
+
+![Open the plugins menu](docs/images/03-plugins-menu.png)
+
+**Step 4 — Create plugin → Add marketplace**
+
+Select **Create plugin**, then choose **Add marketplace**.
+
+![Create plugin → Add marketplace](docs/images/04-create-plugin.png)
+
+**Step 5 — Paste the repository URL and sync**
+
+Paste `https://github.com/FlorHuman8/human8-claude-code-skills` and click **Use...** to sync the marketplace.
+
+> **Note:** If you see "Couldn't load the repository list", that's normal — just type the owner/repo URL directly (`FlorHuman8/human8-claude-code-skills`) and continue.
+
+![Paste the URL and sync](docs/images/05-add-marketplace.png)
+
+**Step 6 — Install plugins**
+
+Install **Core** first (it includes the Azure DevOps MCP server), then install the plugins for your role.
+
+![Install plugins from the directory](docs/images/06-directory.png)
+
+---
+
+### Option B — Claude Code CLI
+
+Run the following commands in order:
+
+```
+/plugin marketplace add FlorHuman8/human8-claude-code-skills
+```
+
+Install **Core first** — it includes the Azure DevOps connection:
+
+```
+/plugin install core@human8-skills
+```
+
+Then install the plugins for your role:
+
+```
+/plugin install dev-skills@human8-skills
+/plugin install dev-skills-surveys@human8-skills      # Surveys team
+/plugin install dev-skills-communities@human8-skills  # Communities team
+/plugin install dev-skills-nara@human8-skills         # Nara / Nolvin team
+/plugin install pm-skills@human8-skills               # PMs
+/plugin install qa-skills@human8-skills               # QA
+```
+
+Reload to activate:
+
+```
+/reload-plugins
+```
+
+---
+
+### Using skills in Claude chat (no CLI required)
+
+Once installed, skills are also available in the general Claude chat — PMs and others can use them without the CLI by typing the skill name or describing the task in natural language.
+
+---
+
+### Troubleshooting
+
+- **"Couldn't load the repository list"** — This is normal. Just type the owner/repo URL (`FlorHuman8/human8-claude-code-skills`) directly instead of browsing the list.
+- **Skills don't appear in the `/` menu** — Skills may not always show as autocomplete suggestions, but they still work when typed in full (e.g. `/pm-skills:draft-pbi`) or described in natural language.
