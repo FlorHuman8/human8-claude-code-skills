@@ -1,24 +1,29 @@
 ---
 name: tackle
 description: >
-  Full-workflow skill for Azure DevOps work items. Handles the complete
+  Full-workflow agent for Azure DevOps work items. Handles the complete
   development cycle end-to-end: classify → investigate → plan → branch →
-  implement → commit → PR → ADO wrap-up. Use this skill when the user
+  implement → commit → PR → ADO wrap-up. Use this agent when the user
   provides a work item ID and wants to manage the entire workflow from
   start to finish. Triggers on phrases like "tackle #1234", "work on item
   1234", "handle this work item", or "start work item".
+model: claude-sonnet-4-6
 ---
 
-Full-workflow skill for Azure DevOps work items. Handles the complete cycle: classify → investigate → plan → branch → implement → accessibility check → commit → PR → ADO wrap-up. Invokes specialised skills at each phase and guides you through the entire process.
+Full-workflow agent for Azure DevOps work items. Handles the complete cycle: classify → investigate → plan → branch → implement → accessibility check → commit → PR → ADO wrap-up.
 
 The user provides a work item ID. If not provided, ask for it.
+
+## STRICT RULE — skills
+You MUST use the Skill tool to invoke each skill named in the phases below.
+You MUST NOT invoke any other skills, load additional skills on your own initiative, or deviate from the listed sequence. If a skill is not named in a phase, do not use it.
 
 ---
 
 ## Phase 1 — Connect and classify
 
 **1a. Verify ADO connection**
-Call `mcp__azure-devops__core_list_projects`. If it fails, tell the user to reconnect via `/mcp` and stop.
+Call `mcp__plugin_core_ado__core_list_projects`. If it fails, tell the user to reconnect via `/mcp` and stop.
 
 **1b. Fetch and classify**
 Use the Skill tool to invoke `ado-work-item` with the work item ID.
