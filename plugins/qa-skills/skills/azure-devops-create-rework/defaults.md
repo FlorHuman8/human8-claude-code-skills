@@ -16,6 +16,7 @@ Edit this file once to reduce prompts. Leave a value empty (`""`) to discover or
 | manualTestingMaxStaleDays | 180 |
 | reworkTypeValue | Rework |
 | reworkTitlePrefix | Rework - |
+| parentReworkState | Needs rework |
 | defaultTags | |
 
 ## Notes
@@ -28,3 +29,4 @@ Edit this file once to reduce prompts. Leave a value empty (`""`) to discover or
 - **manualTestingStates**: Semicolon-separated `System.State` values for discovery WIQL (`IN (...)`) and source validation. Must match the process template exactly (case-sensitive).
 - **manualTestingMaxStaleDays**: Maximum age in days for `System.ChangedDate` (~6 months = 180). Used as `@Today - N` in WIQL. Adjust to 183 if you prefer a closer calendar-month approximation.
 - **reworkTitlePrefix**: Required start of every rework `System.Title` (`Rework -` plus one space before the suffix → `Rework - …`). Prepend if the user supplies a title without it.
+- **parentReworkState**: `System.State` applied to the parent PBI/story after the rework task is created and linked (e.g. `Needs rework`). Must match the parent work item type’s allowed states exactly (case-sensitive). Empty = skip the parent state update.

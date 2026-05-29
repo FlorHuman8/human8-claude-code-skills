@@ -1,11 +1,11 @@
 ---
-name: create-rework
-description: Creates Rework tasks in Azure DevOps from Manual testing work items via user-azure-devops MCP. Eligible source tasks are To Do or In Progress and changed within the last ~6 months. Rework titles use a repro-based suffix after the "Rework - " prefix with mandatory user confirmation. Sets task type to Rework, parents under the sprint story/PBI, on the team's current sprint, adds repro steps and optional video URL to the description, and posts a comment @-mentioning the parent PBI assignee and assignees from earlier rework tasks on that PBI. Use when the user asks to create or log a rework, files a defect from manual testing, or provides an ADO URL or work item ID while testing.
+name: azure-devops-create-rework
+description: Creates Rework tasks in Azure DevOps from Manual testing work items via user-azure-devops MCP. Eligible source tasks are To Do or In Progress and changed within the last ~6 months. Rework titles use a repro-based suffix after the "Rework - " prefix with mandatory user confirmation. Sets task type to Rework, parents under the sprint story/PBI, on the team's current sprint, sets the parent PBI/story state to Needs rework (or parentReworkState from defaults), adds repro steps and optional video URL to the description, and posts a comment @-mentioning the parent PBI assignee and assignees from earlier rework tasks on that PBI. Use when the user asks to create or log a rework, files a defect from manual testing, or provides an ADO URL or work item ID while testing.
 ---
 
 # Azure DevOps — Create Rework
 
-Create a **Task** with type **Rework**, parented under the **Manual testing task’s parent** (User Story / PBI), on the **current sprint** iteration. Use MCP server `**user-azure-devops`**. Read [defaults.md](defaults.md) and [field-templates.md](field-templates.md) at the start of every run.
+Create a **Task** with type **Rework**, parented under the **Manual testing task’s parent** (User Story / PBI), on the **current sprint** iteration, and set the parent’s state to **Needs rework** (or `parentReworkState` from defaults). Use MCP server `**user-azure-devops`**. Read [defaults.md](defaults.md) and [field-templates.md](field-templates.md) at the start of every run.
 
 ## When to use
 
@@ -54,18 +54,15 @@ WHERE [System.TeamProject] = @project
 ORDER BY [System.ChangedDate] DESC
 ```
 
-3. Merge results (max ~30).
-4. **Resolve parent title for each candidate** (before asking the user to pick):
-   - For each manual testing task id, call `wit_get_work_item` with `expand: "relations"` (or read `System.Parent` if present).
-   - Find parent via `System.LinkTypes.Hierarchy-Reverse`; call `wit_get_work_item` for the parent id and read `System.Title`.
-   - Store as `parentTitle` for that candidate. If there is no parent, use `(no parent)` as the label suffix.
-5. Use **AskQuestion** when available. Show the **parent PBI title**, not the manual testing task title (which is usually just “Manual testing”):
-
-   `{id} — {parentTitle} [{state}, changed {changedDate}] ({project})`
-
+1. Merge results (max ~30).
+2. **Resolve parent title for each candidate** (before asking the user to pick):
+  - For each manual testing task id, call `wit_get_work_item` with `expand: "relations"` (or read `System.Parent` if present).
+  - Find parent via `System.LinkTypes.Hierarchy-Reverse`; call `wit_get_work_item` for the parent id and read `System.Title`.
+  - Store as `parentTitle` for that candidate. If there is no parent, use `(no parent)` as the label suffix.
+3. Use **AskQuestion** when available. Show the **parent PBI title**, not the manual testing task title (which is usually just “Manual testing”):
+  `{id} — {parentTitle} [{state}, changed {changedDate}] ({project})`
    Example: `149912 — Add 'Login type' & 'follows square wechat account' status per participant to health export [In Progress, changed 2026-05-28] (InSites Eco)`
-
-6. If none found, ask for URL/ID or suggest: `projectsToScan` too narrow, no tasks in **To Do** / **In Progress**, nothing changed in the last ~6 months, or wrong state names in `manualTestingStates`.
+4. If none found, ask for URL/ID or suggest: `projectsToScan` too narrow, no tasks in **To Do** / **In Progress**, nothing changed in the last ~6 months, or wrong state names in `manualTestingStates`.
 
 **Validate source** (after `wit_get_work_item` for URL/ID or post-selection):
 
@@ -83,8 +80,9 @@ Track whether the user supplied an explicit URL/ID (`explicitSource: true`).
 
 From the source item’s relations, find the parent: `rel` = `System.LinkTypes.Hierarchy-Reverse` → `url` or id in relation.
 
-- Call `wit_get_work_item` for the parent id (include `System.AssignedTo` in fields).
+- Call `wit_get_work_item` for the parent id (include `System.AssignedTo`, `System.WorkItemType`, and `System.State` in fields).
 - Record `System.AreaPath`, `System.IterationPath`, `System.TeamProject`, title, and parent assignee — for area, sprint resolution, draft display, linking, and notification (**not** for rework title or description).
+- Store `parentWorkItemType` ← `System.WorkItemType`, `parentState` ← `System.State` (for draft preview and §8.1).
 - **List earlier rework tasks** on this parent (for notification and draft preview). `wit_query_by_wiql` with `project` = parent’s `System.TeamProject`:
 
 ```sql
@@ -103,10 +101,12 @@ Substitute `{parentId}` and use `reworkTypeValue` from defaults for the Activity
 
 **Fields for the new rework:**
 
-| Field | Resolution |
-| ----- | ---------- |
-| `System.AreaPath` | Parent’s area path (unchanged) |
+
+| Field                  | Resolution                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `System.AreaPath`      | Parent’s area path (unchanged)                                                                                      |
 | `System.IterationPath` | **Current sprint** for the team derived from the parent (see below) — **never** the parent’s `System.IterationPath` |
+
 
 The parent may sit on an older sprint (e.g. Sprint 262) while the team’s current sprint is newer (e.g. Sprint 264). Only the sprint changes; area and team context come from the parent.
 
@@ -198,6 +198,7 @@ Show:
 - Team: {resolvedTeam}
 - Area: {parentAreaPath}
 - Iteration: {reworkIteration} (current sprint; parent is on {parentIteration} if different)
+- **Parent state:** if `parentReworkState` from defaults is empty, show “(skipped — not configured)”. If `parentState` equals `parentReworkState`, show “unchanged — already {parentReworkState}”. Otherwise show `{parentState}` → `{parentReworkState}`.
 - Task type field = `Rework`
 - Description preview (Repro steps + Recording only)
 - **Notification comment** (preview): who will be mentioned (display names) — parent assignee + earlier rework assignees, deduped; skip if none
@@ -235,13 +236,40 @@ Call `wit_work_items_link`:
 }
 ```
 
+### 8.1 Set parent state
+
+After §8 succeeds, set the parent PBI/story to `parentReworkState` from defaults (default: `Needs rework`). No extra user confirmation.
+
+1. If `parentReworkState` is empty, **skip** this step.
+2. If `parentState` (from §3) already equals `parentReworkState`, **skip** the update. Record `parentStateResult` = `already` for §10.
+3. Validate the target state:
+  - Call `wit_get_work_item_type` with `project` = parent’s `System.TeamProject` and `workItemType` = `parentWorkItemType`.
+  - Confirm `parentReworkState` is an allowed value for `System.State` on that type.
+  - If not found, **skip** the update, list allowed states from the schema, set `parentStateResult` = `invalid`, and continue to §9 — do not guess alternate spellings.
+4. Call `wit_update_work_item`:
+
+```json
+{
+  "id": "<parentId>",
+  "updates": [
+    {
+      "op": "replace",
+      "path": "/fields/System.State",
+      "value": "<parentReworkState>"
+    }
+  ]
+}
+```
+
+1. On success, set `parentStateResult` = `updated`. On failure (e.g. invalid workflow transition), set `parentStateResult` = `failed`, surface the ADO error text, and continue to §9 — do not roll back the rework task.
+
 ### 9. Add notification comment
 
 On the **new rework** (`workItemId` = new task id), notify the parent assignee and assignees from earlier rework tasks on the same PBI.
 
 1. **Build mention set** (dedupe by `System.AssignedTo.id`):
-   - Parent PBI `System.AssignedTo` (if set).
-   - Each `earlierReworks` entry with an assignee (exclude the new rework id).
+  - Parent PBI `System.AssignedTo` (if set).
+  - Each `earlierReworks` entry with an assignee (exclude the new rework id).
 2. If the set is empty, **skip** this step.
 3. Build comment text per [field-templates.md](field-templates.md) (notification section): **mentions only** — a `<div>` of `<a href="#" data-vss-mention="version:2.0,{id}">@{displayName}</a>` per person. Use each person’s `System.AssignedTo.id` and `displayName`. Do **not** use plain `@Name` Markdown; that does not send email.
 4. `wit_add_work_item_comment`:
@@ -262,6 +290,12 @@ If the comment fails, report the error but still return the new rework URL (the 
 1. Parse new work item **ID** from the create response.
 2. Return URL: replace `{id}` in `workItemUrlPattern` from defaults (adjust project segment if a different project was used).
 3. Note who was mentioned in the notification comment (if any).
+4. Report parent state outcome from §8.1:
+  - `updated` — parent moved to `{parentReworkState}` (include parent URL using `workItemUrlPattern` with `{parentId}`).
+  - `already` — parent was already `{parentReworkState}`.
+  - `skipped` — `parentReworkState` not configured.
+  - `invalid` — target state not in parent type schema (allowed states were listed).
+  - `failed` — update attempted but ADO rejected (include error).
 
 ## Tool reference
 
@@ -278,6 +312,8 @@ If the comment fails, report the error but still return the new rework URL (the 
 | Earlier reworks      | `wit_query_by_wiql`         |
 | Create task          | `wit_create_work_item`      |
 | Link to parent       | `wit_work_items_link`       |
+| Parent type schema   | `wit_get_work_item_type`    |
+| Set parent state     | `wit_update_work_item`      |
 | Resolve identity id  | `core_get_identity_ids`     |
 | Notify assignees     | `wit_add_work_item_comment` |
 
@@ -293,4 +329,6 @@ If the comment fails, report the error but still return the new rework URL (the 
 - If the earlier-rework WIQL fails, fall back: `wit_get_work_item` on the parent with `expand: "relations"`, load each `Hierarchy-Forward` child, keep tasks where Activity = `Rework`.
 - If `wit_add_work_item_comment` fails, surface the error; do not roll back the work item.
 - If mentions do not notify (plain text only in UI), confirm `format` is `Html` and `data-vss-mention` uses `version:2.0,{System.AssignedTo.id}`; resolve missing ids via `core_get_identity_ids`.
+- If parent state update fails (invalid transition), report the error; still return the new rework URL.
+- If `parentReworkState` is not in the parent type’s allowed `System.State` values, list allowed values from `wit_get_work_item_type`; do not guess alternate spellings.
 
